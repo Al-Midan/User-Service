@@ -1,10 +1,14 @@
 // repository/UserRepository.ts
-import { returnUser } from "../../domain/entities/returnUser";
+// import { returnUser } from "../../domain/entities/returnUser";
+import { Kafka } from "kafkajs";
+import { googelUserData } from "../../presentation/interface/interface";
 import { User, UserDocument } from "../database/model/UserDb";
 import { IUserRepository } from "../interface/IuserRepository";
+import { ProfileUpdatePayload } from "../../domain/entities/ProfileUpdatePayload";
+import { uploadS3ProfileImage } from "../s3/s3Uploader";
 
 export class UserRepository implements IUserRepository {
-  async findUserExists(email: string): Promise<UserDocument | null> {
+  async findUserExists(email: string) {
     const user = await User.findOne({ email });
     return user ? user : null;
   }
@@ -39,8 +43,8 @@ export class UserRepository implements IUserRepository {
     return newUser;
   }
 
-  async findUserByOtp(values: any): Promise<UserDocument | null> {
-    let number = parseInt(values.join(''), 10);
+  async findUserByOtp(values: any) {
+    let number = parseInt(values.join(""), 10);
 
     const user = await User.findOne({ otp: number });
 
@@ -54,8 +58,38 @@ export class UserRepository implements IUserRepository {
         return null;
       }
       user.isVerified = true;
-      user.otp = 1
+      user.otp = 1;
       await user.save();
+
+      // // Create a Kafka producer
+      // const kafka = new Kafka({
+      //   clientId: "my-app",
+      //   brokers: ["localhost:29092"],
+      // });
+      // const producer = kafka.producer();
+
+      // try {
+      //   // Connect to the Kafka producer
+      //   await producer.connect();
+
+      //   // Create a message payload
+      //   const message = {
+      //     value: JSON.stringify(user),
+      //   };
+      //   console.log("message User-Service: " + message.value);
+      //   // Send the message to the Kafka topic
+      //   await producer.send({
+      //     topic: "user-values-topic",
+      //     messages: [message],
+      //   });
+
+      //   console.log("User values sent to Kafka topic");
+      // } catch (error) {
+      //   console.error("Error sending user values to Kafka topic:", error);
+      // } finally {
+      //   // Disconnect the producer
+      //   await producer.disconnect();
+      // }
     }
     return user ? user : null;
   }
@@ -85,5 +119,83 @@ export class UserRepository implements IUserRepository {
       );
       throw error;
     }
+  }
+  async UserValues(userId: string) {
+    const user = await User.findById(userId);
+    return user ? user : null;
+  }
+  async UpdateRole(role: string, userId: string) {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { roles: role },
+      { new: true }
+    );
+
+    return updatedUser ? updatedUser : null;
+  }
+  async googleUser(userData: googelUserData) {
+    try {
+      let user = await User.findOne({ email: userData.email });
+
+      if (user) {
+        // Update existing user with new values
+        user.username = userData.username;
+        user.password = userData.password;
+        user.otp = 1;
+        user.roles = "student";
+        (user.isVerified = true), (user.createdAt = new Date());
+      } else {
+        // Create a new user if not found
+        user = new User({
+          username: userData.username,
+          email: userData.email,
+          password: userData.password,
+          otp: 1,
+          roles: "student",
+          isVerified: true,
+          createdAt: new Date(),
+        });
+      }
+
+      const savedUser = await user.save();
+      return savedUser;
+    } catch (error) {
+      console.error("Error in googleUser:", error);
+      throw error;
+    }
+  }
+  async getvaluesByEmail(email: string) {
+    const userValues = await User.findOne({ email });
+    return userValues ? userValues : null;
+  }
+  async profileUpdate(values:ProfileUpdatePayload){
+    const { profilePic, userId, username } = values;
+
+  try {
+    const s3Response: any = await uploadS3ProfileImage(profilePic);
+    if (s3Response.error) {
+      console.error("Error uploading image to S3:", s3Response.error);
+      throw new Error("Failed to upload image to S3");
+    }
+
+    console.log("URL of the image from the S3 bucket:", s3Response.Location);
+
+    const update = {
+      username,
+      profilePic: s3Response.Location
+    };
+
+    const response = await User.findByIdAndUpdate(userId, update, { new: true });
+    
+    if (!response) {
+      throw new Error("User not found");
+    }
+console.log("response",response);
+
+    return response;
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    throw new Error("Failed to update user profile");
+  }
   }
 }
