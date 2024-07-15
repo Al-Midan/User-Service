@@ -305,5 +305,10 @@ console.log("JWT_SECRET",JWT_SECRET);
       res.status(500).json({ message: "Internal server error" });
     }
   }
+  async logOut(req:Request, res:Response) {
+    res.clearCookie('access_token');
+  res.clearCookie('refresh_token');
+  res.status(200).json({ message: 'Logged out successfully' });
+  }
   
 }

@@ -12,6 +12,7 @@ const user = new UserUseCase(repository);
 const controller = new userController(user);
 
 router.post("/register", controller.registerUser.bind(controller));
+router.get("/logOut", controller.logOut.bind(controller));
 router.post("/otp-verification", controller.otpverification.bind(controller));
 router.post("/login", controller.loginUser.bind(controller));
 router.get("/user-management", passport.authenticate('jwt', { session: false }), adminverifyToken, controller.getAllUsers.bind(controller));router.put("/isBlocked/:userId", controller.isBlocked.bind(controller));
