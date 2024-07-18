@@ -88,7 +88,7 @@ export class userController {
           }
           let userData = {
             _id: user._id,
-            username: user,
+            username: user.username,
             email: user.email,
             isBlocked: user.isBlocked,
             isVerified: user.isVerified,
