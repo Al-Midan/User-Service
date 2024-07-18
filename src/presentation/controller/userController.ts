@@ -54,7 +54,7 @@ export class userController {
         .json({ error: "An error occurred during otp verification" });
     }
   }
-  async loginUser(req: Request, res: Response, next: NextFunction) {
+  async loginUser(req: Request, res: Response) {
     try {
       const { email, password } = req.body;
       // Proceed with the normal user login flow
@@ -88,14 +88,19 @@ export class userController {
           }
           let userData = {
             _id: user._id,
-            username: user.username,
+            username: user,
             email: user.email,
             isBlocked: user.isBlocked,
             isVerified: user.isVerified,
             roles: user.roles,
             accessToken,
             refreshToken,
+            profilePic: "",
           };
+          if (user.profilePic) {
+            userData.profilePic = user.profilePic;
+          }
+
           console.log("userData", userData);
           return res
             .status(200)
@@ -183,32 +188,32 @@ export class userController {
   async handleGooglePassport(req: Request, res: Response) {
     try {
       const user = req.user as GoogleUser | undefined;
-  
+
       if (!user) {
         res.status(400).json({ message: "User information not found" });
         return;
       }
-  
+
       console.log("req.user:", user);
-  
+
       const username = user.name.givenName;
       const email = user.emails[0].value;
       const verified = user.emails[0].verified;
       const password = user.id;
-  
+
       if (!verified) {
         res.status(400).json({ message: "Please provide a verified email" });
         return;
       }
-  
+
       const userData: googelUserData = {
         username,
         email,
         password,
       };
-  
+
       const response = await this.userUsecase.googleUser(userData);
-  
+
       if (response) {
         res.redirect("http://localhost:3000/home");
       } else {
@@ -219,7 +224,6 @@ export class userController {
       res.status(500).json({ message: "Internal server error" });
     }
   }
-  
 
   async roleUpdate(req: Request, res: Response) {
     try {
@@ -240,12 +244,12 @@ export class userController {
     if (!refreshToken) {
       return res.status(400).json({ message: "Refresh token is required" });
     }
-console.log("refreshToken",refreshToken);
-console.log("JWT_SECRET",JWT_SECRET);
+    console.log("refreshToken", refreshToken);
+    console.log("JWT_SECRET", JWT_SECRET);
 
     try {
       const user = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
-      console.log("user",user);
+      console.log("user", user);
 
       // Generate a new access token
       const newAccessToken = jwt.sign({ email: user.email }, JWT_SECRET, {
@@ -263,52 +267,54 @@ console.log("JWT_SECRET",JWT_SECRET);
   async userValues(req: Request, res: Response) {
     try {
       const { email } = req.query;
-  
-      if (!email || typeof email !== 'string') {
-        return res.status(400).json({ message: 'Valid email is required' });
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Valid email is required" });
       }
-  
+
       const response = await this.userUsecase.getValues(email);
-  
+
       if (response) {
-        res.status(200).json({ 
+        res.status(200).json({
           message: "User values are valid",
-          data: response 
+          data: response,
         });
       } else {
-        res.status(404).json({ message: "User not found or values are invalid" });
+        res
+          .status(404)
+          .json({ message: "User not found or values are invalid" });
       }
-  
     } catch (error) {
-      console.error('Error in userValues:', error);
+      console.error("Error in userValues:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   }
   async updateProfile(req: Request, res: Response) {
     try {
-      console.log('Updating profile', req.body);
-      console.log('Updating profile', req.file);
-  
+      console.log("Updating profile", req.body);
+      console.log("Updating profile", req.file);
+
       const { username: userName, userID: userId } = req.body;
       const profilePic = req.file;
-  
+
       const payload = {
         username: userName,
         userId: userId,
-        profilePic
+        profilePic,
       };
-  
+
       const response = await this.userUsecase.profileUpdate(payload);
-      res.status(200).json({ message: "Profile Updated successfully", response });
+      res
+        .status(200)
+        .json({ message: "Profile Updated successfully", response });
     } catch (error) {
-      console.error('Error in updating profile:', error);
+      console.error("Error in updating profile:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   }
-  async logOut(req:Request, res:Response) {
-    res.clearCookie('access_token');
-  res.clearCookie('refresh_token');
-  res.status(200).json({ message: 'Logged out successfully' });
+  async logOut(req: Request, res: Response) {
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+    res.status(200).json({ message: "Logged out successfully" });
   }
-  
 }
