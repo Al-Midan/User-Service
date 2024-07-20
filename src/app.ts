@@ -7,6 +7,8 @@ import  Session  from "express-session"
 import cookieParser from 'cookie-parser';
 import "./config/passport-jwt-strategy"
 import passport from "./utils/passport-google-auth"
+import { kafkaProducer } from "./infrastructure/broker/kafkaBroker/kafkaProducer"
+import { consumeUserDetails } from "./infrastructure/broker/kafkaBroker/kafkaConsumer"
 dotenv.config()
 const app = express()
 app.use(cors({
@@ -28,21 +30,30 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-// app.use((req, res, next) => {
-//   console.log('Request Headers:', req.headers);
-//   next();
-// });
 app.use("/", router)
-connectDb
-  .then(() => {
-    console.log('MongoDB connected successfully');
+async function startApp() {
+  try {
+    // Connect to MongoDB
+    await connectDb;
+    console.log("MongoDB connected successfully");
+
+    // Initialize Kafka producer
+    await kafkaProducer.connect();
+    console.log("Kafka producer connected successfully");
+
+    // Start consuming user Detail requests
+    await consumeUserDetails();
+    console.log("Kafka consumer started successfully");
 
     // Start the server
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
-  });
+  } catch (err) {
+    console.error("Error starting the application:", err);
+    process.exit(1);
+  }
+}
+
+startApp();

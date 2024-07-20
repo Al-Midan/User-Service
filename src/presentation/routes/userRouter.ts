@@ -26,4 +26,6 @@ router.post('/roleUpdate',controller.roleUpdate.bind(controller));
 router.post('/refresh-token',controller.refreshTokens.bind(controller));
 router.get('/userValues',controller.userValues.bind(controller));
 router.post('/updateProfile', upload.single('profileImage'), controller.updateProfile.bind(controller));
+export const handleGetuserDetails = controller.handleGetuserDetails.bind(controller);
+
 export default router;

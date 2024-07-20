@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { IuserUsecase } from "../../application/interface/IuserUsecase";
 import { GoogleUser, googelUserData } from "../interface/interface";
 import jwt, { Secret } from "jsonwebtoken";
+import { kafkaProducer } from "../../infrastructure/broker/kafkaBroker/kafkaProducer";
 
 const JWT_SECRET: Secret = process.env.JWT_KEY as Secret;
 const JWT_REFRESH_SECRET: Secret = process.env.JWT_REFRESHKEY as Secret;
@@ -316,5 +317,30 @@ export class userController {
     res.clearCookie("access_token");
     res.clearCookie("refresh_token");
     res.status(200).json({ message: "Logged out successfully" });
+  }
+  async handleGetuserDetails(userId: string) {
+    try {
+      const response = await this.userUsecase.getUserId(userId);
+      if (response) {
+        let userData = {
+          _id: response._id,
+          userId: response.userId,
+          username: response.username,
+          email: response.email,
+          isBlocked: response.isBlocked,
+          isVerified: response.isVerified,
+        };
+        console.log("Sending user details response:", userData);
+        await kafkaProducer.senduserDetailsResponse(userId, userData);
+      } else {
+        console.log("No user found for userId:", userId);
+        await kafkaProducer.senduserDetailsResponse(userId, null);
+      }
+    } catch (error) {
+      console.log("Error in handleGetuserDetails:", error);
+      await kafkaProducer.senduserDetailsResponse(userId, {
+        error: "An error occurred while fetching user details",
+      });
+    }
   }
 }
