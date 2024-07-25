@@ -239,24 +239,30 @@ export class userController {
       res.status(400).json({ message: "Role update Error", error });
     }
   }
-  async refreshTokens(req: Request, res: Response, next: NextFunction) {
+  async  refreshTokens(req: Request, res: Response, next: NextFunction) {
     const { refreshToken } = req.body;
-
+  
     if (!refreshToken) {
       return res.status(400).json({ message: "Refresh token is required" });
     }
-    console.log("refreshToken", refreshToken);
-    console.log("JWT_SECRET", JWT_SECRET);
-
+  
     try {
-      const user = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
-      console.log("user", user);
+      const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+      const JWT_SECRET = process.env.JWT_SECRET;
+  
+      if (!JWT_REFRESH_SECRET || !JWT_SECRET) {
+        throw new Error("JWT secrets are not defined");
+      }
+      console.log("JWT_REFRESH_SECRET cked Controller", JWT_REFRESH_SECRET);
+      console.log("JWT_SECRET cked JWT_SECRET", JWT_SECRET);
 
+      const user = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
+  
       // Generate a new access token
       const newAccessToken = jwt.sign({ email: user.email }, JWT_SECRET, {
         expiresIn: "1h",
       });
-
+  
       res.status(200).json({ accessToken: newAccessToken });
     } catch (err: any) {
       if (err.name === "TokenExpiredError") {
@@ -265,6 +271,7 @@ export class userController {
       return res.status(403).json({ message: "Refresh token is not valid" });
     }
   }
+  
   async userValues(req: Request, res: Response) {
     try {
       const { email } = req.query;
