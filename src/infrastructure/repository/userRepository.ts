@@ -1,5 +1,3 @@
-// repository/UserRepository.ts
-// import { returnUser } from "../../domain/entities/returnUser";
 import { Kafka } from "kafkajs";
 import { googelUserData } from "../../presentation/interface/interface";
 import { User, UserDocument } from "../database/model/UserDb";
@@ -60,36 +58,6 @@ export class UserRepository implements IUserRepository {
       user.isVerified = true;
       user.otp = 1;
       await user.save();
-
-      // // Create a Kafka producer
-      // const kafka = new Kafka({
-      //   clientId: "my-app",
-      //   brokers: ["localhost:29092"],
-      // });
-      // const producer = kafka.producer();
-
-      // try {
-      //   // Connect to the Kafka producer
-      //   await producer.connect();
-
-      //   // Create a message payload
-      //   const message = {
-      //     value: JSON.stringify(user),
-      //   };
-      //   console.log("message User-Service: " + message.value);
-      //   // Send the message to the Kafka topic
-      //   await producer.send({
-      //     topic: "user-values-topic",
-      //     messages: [message],
-      //   });
-
-      //   console.log("User values sent to Kafka topic");
-      // } catch (error) {
-      //   console.error("Error sending user values to Kafka topic:", error);
-      // } finally {
-      //   // Disconnect the producer
-      //   await producer.disconnect();
-      // }
     }
     return user ? user : null;
   }

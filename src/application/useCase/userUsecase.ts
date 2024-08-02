@@ -6,7 +6,6 @@ import { sendOtpEmail } from "../../utils/mailUtils";
 import { UserDocument } from "../../infrastructure/database/model/UserDb";
 import { generateToken } from "../../utils/generateJwtToken";
 import { generateRefreshToken } from "../../utils/generateJwtToken";
-import { Response } from "express";
 import { generateOtpWithTime } from "../../utils/generateOtp";
 import { googelUserData } from "../../presentation/interface/interface";
 import { ProfileUpdatePayload } from "../../domain/entities/ProfileUpdatePayload";
