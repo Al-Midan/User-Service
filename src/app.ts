@@ -34,8 +34,8 @@ app.use("/", router)
 async function startApp() {
   try {
     // Connect to MongoDB
-    await connectDb;
-    console.log("MongoDB connected successfully");
+    const response = await connectDb;
+    console.log("MongoDB connected Message",response);
 
     // Initialize Kafka producer
     await kafkaProducer.connect();
