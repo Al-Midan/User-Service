@@ -2,7 +2,8 @@ import { KafkaModule } from '../../../utils/kafka/kafkaModule';
 
 class KafkaProducer extends KafkaModule {
   constructor() {
-    super('user-service-producer', ['localhost:9092']);
+    //super('user-service-producer', ['localhost:9092']);
+    super('user-service-producer', ['kafka:29092']);
   }
 
   async senduserDetailsResponse(userId: string, userDetails: any): Promise<void> {

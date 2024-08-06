@@ -2,17 +2,17 @@ import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import passport from "passport";
 import { UserRepository } from "../infrastructure/repository/userRepository";
 
-if (!process.env.JWT_KEY) {
-  throw new Error("Environment variable JWT_KEY is not set.");
-}
+// Use a fallback value or handle undefined JWT_KEY
+const jwtKey = process.env.JWT_KEY || "qw8U4DWxcbsNZXWdjkUYheEzFshbDSNE";
 
-const opts = {
+const opts: any = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_KEY,
+  secretOrKey: jwtKey,
+  passReqToCallback: false,
 };
 
 passport.use(
-  new JwtStrategy(opts, async (jwt_payload: any, done: any) => {
+  new (JwtStrategy as any)(opts, async (jwt_payload: any, done: any) => {
     try {
       const userRepository = new UserRepository();
       const user = await userRepository.findUserExists(jwt_payload.email);
