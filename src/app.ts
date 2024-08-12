@@ -10,13 +10,20 @@ import passport from "./utils/passport-google-auth"
 import { kafkaProducer } from "./infrastructure/broker/kafkaBroker/kafkaProducer"
 import { consumeUserDetails } from "./infrastructure/broker/kafkaBroker/kafkaConsumer"
 dotenv.config()
-const app = express()
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+const allowedOrigins = [
+  'https://al-midan-frontend.vercel.app',
+  'https://localhost:3000',
+  'http://52.140.4.194',
+  'https://vuueskfwhd.execute-api.ap-south-1.amazonaws.com'
+];
+const corsOptions = {
+  origin: allowedOrigins,
+  optionsSuccessStatus: 200,
   credentials: true,
-  optionsSuccessStatus: 200
-}));
+};
+const app = express()
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))

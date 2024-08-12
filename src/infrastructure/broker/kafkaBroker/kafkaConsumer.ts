@@ -4,7 +4,7 @@ import { handleGetuserDetails } from "../../../presentation/routes/userRouter";
 class KafkaConsumer extends KafkaModule {
   constructor() {
    // super('user-service-consumer', ['localhost:9092']);
-   super('user-service-producer', ['kafka:29092']);
+   super('user-service-producer', ['kafka:9092']);
   }
 
   async consumeUserDetails(): Promise<void> {
