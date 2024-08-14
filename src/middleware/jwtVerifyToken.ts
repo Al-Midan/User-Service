@@ -57,9 +57,9 @@ const adminverifyToken = (req: Request, res: Response, next: NextFunction) => {
       });
 
       res.cookie("access_token", newAccessToken, {
-        httpOnly: true,
+        httpOnly: false,
         sameSite: "none",
-        secure: true,
+        secure: false,
         maxAge: 3600000, // 1 hour
       });
 

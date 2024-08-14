@@ -75,13 +75,13 @@ export class userController {
         if (user) {
           if (accessToken && refreshToken) {
             res.cookie("access_token", accessToken, {
-              httpOnly: true,
+              httpOnly: false,
               sameSite: "none",
               secure: true,
-              maxAge: 3600000, // 1 hour
+              maxAge: 3600, // 1 hour
             });
             res.cookie("refresh_token", refreshToken, {
-              httpOnly: true,
+              httpOnly: false,
               sameSite: "none",
               secure: true,
               maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days

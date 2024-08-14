@@ -13,8 +13,8 @@ dotenv.config()
 const allowedOrigins = [
   'https://al-midan-frontend.vercel.app',
   'https://localhost:3000',
-  'http://52.140.4.194',
-  'https://vuueskfwhd.execute-api.ap-south-1.amazonaws.com'
+  'http://13.71.112.129',
+  'https://peducoggsc.execute-api.ap-south-1.amazonaws.com'
 ];
 const corsOptions = {
   origin: allowedOrigins,

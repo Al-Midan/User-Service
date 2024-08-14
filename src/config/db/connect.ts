@@ -8,7 +8,7 @@ if(!process.env.MONGO_URL){
     console.log("MONGO_URL is not set, using fallback URL");
 }
 
-const mongoUrl=process.env.MONGO_URL||"mongodb+srv://easanedumangad:ByKn7EYAqmsgqTl0@cluster0.eyvqmzv.mongodb.net/Al-Midan?retryWrites=true&w=majority";
+const mongoUrl=process.env.MONGO_URL||"mongodb://mongodb-service:27017/Al-Midan";
 
 console.log("Final MONGO_URL:", mongoUrl);
 
